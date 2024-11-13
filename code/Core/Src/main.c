@@ -19,8 +19,10 @@
 /* Includes ------------------------------------------------------------------*/
 #include "main.h"
 #include "cmsis_os.h"
+#include "dma.h"
 #include "app_fatfs.h"
 #include "spi.h"
+#include "tim.h"
 #include "usart.h"
 #include "gpio.h"
 
@@ -103,11 +105,13 @@ int main(void)
 
   /* Initialize all configured peripherals */
   MX_GPIO_Init();
+  MX_DMA_Init();
   MX_SPI1_Init();
   if (MX_FATFS_Init() != APP_OK) {
     Error_Handler();
   }
   MX_USART2_UART_Init();
+  MX_TIM3_Init();
   /* USER CODE BEGIN 2 */
   myprintf("\r\n~ SD card demo by kiwih ~\r\n\r\n");
   HAL_Delay(1000); //a short delay is important to let the SD card settle
