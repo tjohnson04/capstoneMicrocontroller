@@ -63,6 +63,8 @@ uint16_t led_row_pins[] = {LED_Row1_Pin, LED_Row2_Pin, LED_Row3_Pin, LED_Row4_Pi
 
 uint32_t *base_mem_addr = (uint32_t *) 0x20000000;
 
+extern uint8_t current_frame;
+
 /* USER CODE END Variables */
 /* Definitions for readSD */
 osThreadId_t readSDHandle;
@@ -78,17 +80,10 @@ const osThreadAttr_t driveLED_attributes = {
   .priority = (osPriority_t) osPriorityRealtime,
   .stack_size = 128 * 4
 };
-/* Definitions for getImageFrame */
-osThreadId_t getImageFrameHandle;
-const osThreadAttr_t getImageFrame_attributes = {
-  .name = "getImageFrame",
-  .priority = (osPriority_t) osPriorityNormal,
-  .stack_size = 128 * 4
-};
-/* Definitions for getLEDstatus */
-osThreadId_t getLEDstatusHandle;
-const osThreadAttr_t getLEDstatus_attributes = {
-  .name = "getLEDstatus",
+/* Definitions for SDtoMemory */
+osThreadId_t SDtoMemoryHandle;
+const osThreadAttr_t SDtoMemory_attributes = {
+  .name = "SDtoMemory",
   .priority = (osPriority_t) osPriorityLow,
   .stack_size = 128 * 4
 };
@@ -100,8 +95,7 @@ const osThreadAttr_t getLEDstatus_attributes = {
 
 void StartReadSD(void *argument);
 void StartDriveLED(void *argument);
-void StartGetImageFrame(void *argument);
-void StartGetLEDStatus(void *argument);
+void StartSDtoMemory(void *argument);
 
 void MX_FREERTOS_Init(void); /* (MISRA C 2004 rule 8.1) */
 
@@ -138,11 +132,8 @@ void MX_FREERTOS_Init(void) {
   /* creation of driveLED */
   driveLEDHandle = osThreadNew(StartDriveLED, NULL, &driveLED_attributes);
 
-  /* creation of getImageFrame */
-  getImageFrameHandle = osThreadNew(StartGetImageFrame, NULL, &getImageFrame_attributes);
-
-  /* creation of getLEDstatus */
-  getLEDstatusHandle = osThreadNew(StartGetLEDStatus, NULL, &getLEDstatus_attributes);
+  /* creation of SDtoMemory */
+  SDtoMemoryHandle = osThreadNew(StartSDtoMemory, NULL, &SDtoMemory_attributes);
 
   /* USER CODE BEGIN RTOS_THREADS */
   /* add threads, ... */
@@ -193,7 +184,7 @@ void StartDriveLED(void *argument)
 		  // set columns
 		  // 0000 0000 0000 0000
 		  for (uint8_t j = 0; j < 16; j++) {
-			  if (base_mem_addr[i * 2] & 0x1 << (16-j)) {
+			  if (base_mem_addr[current_frame * 16 + i * 2] & 0x1 << (16-j)) {
 				  HAL_GPIO_WritePin(led_column_ports[j], led_column_pins[j], GPIO_PIN_SET);
 			  } else {
 				  HAL_GPIO_WritePin(led_column_ports[j], led_column_pins[j], GPIO_PIN_RESET);
@@ -208,42 +199,23 @@ void StartDriveLED(void *argument)
   /* USER CODE END StartDriveLED */
 }
 
-/* USER CODE BEGIN Header_StartGetImageFrame */
+/* USER CODE BEGIN Header_StartSDtoMemory */
 /**
-* @brief Function implementing the getImageFrame thread.
+* @brief Function implementing the SDtoMemory thread.
 * @param argument: Not used
 * @retval None
 */
-/* USER CODE END Header_StartGetImageFrame */
-void StartGetImageFrame(void *argument)
+/* USER CODE END Header_StartSDtoMemory */
+void StartSDtoMemory(void *argument)
 {
-  /* USER CODE BEGIN StartGetImageFrame */
+  /* USER CODE BEGIN StartSDtoMemory */
   /* Infinite loop */
   for(;;)
   {
     osDelay(1);
   }
   osThreadTerminate(NULL);
-  /* USER CODE END StartGetImageFrame */
-}
-
-/* USER CODE BEGIN Header_StartGetLEDStatus */
-/**
-* @brief Function implementing the getLEDstatus thread.
-* @param argument: Not used
-* @retval None
-*/
-/* USER CODE END Header_StartGetLEDStatus */
-void StartGetLEDStatus(void *argument)
-{
-  /* USER CODE BEGIN StartGetLEDStatus */
-  /* Infinite loop */
-  for(;;)
-  {
-    osDelay(1);
-  }
-  osThreadTerminate(NULL);
-  /* USER CODE END StartGetLEDStatus */
+  /* USER CODE END StartSDtoMemory */
 }
 
 /* Private application code --------------------------------------------------*/
