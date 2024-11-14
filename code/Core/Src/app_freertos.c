@@ -178,8 +178,8 @@ void StartDriveLED(void *argument)
   for(;;)
   {
 	  for (uint8_t i = 0; i < 16; i++) {
-		  // turn off last row
-		  HAL_GPIO_WritePin(led_row_ports[i], led_row_pins[i], GPIO_PIN_RESET);
+		  // turn off last row (active low)
+		  HAL_GPIO_WritePin(led_row_ports[i], led_row_pins[i], GPIO_PIN_SET);
 
 		  // set columns
 		  // 0000 0000 0000 0000
@@ -192,7 +192,7 @@ void StartDriveLED(void *argument)
 		  }
 
 		  // turn on next row
-		  HAL_GPIO_WritePin(led_row_ports[i+1], led_row_pins[i+1], GPIO_PIN_SET);
+		  HAL_GPIO_WritePin(led_row_ports[i+1], led_row_pins[i+1], GPIO_PIN_RESET);
 	  }
   }
   osThreadTerminate(NULL);

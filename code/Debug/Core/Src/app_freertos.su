@@ -1,5 +1,4 @@
-../Core/Src/app_freertos.c:115:6:MX_FREERTOS_Init	8	static
-../Core/Src/app_freertos.c:166:6:StartReadSD	16	static
-../Core/Src/app_freertos.c:185:6:StartDriveLED	32	static
-../Core/Src/app_freertos.c:220:6:StartIterateFrame	16	static
-../Core/Src/app_freertos.c:238:6:StartSDtoMemory	16	static
+../Core/Src/app_freertos.c:107:6:MX_FREERTOS_Init	8	static
+../Core/Src/app_freertos.c:155:6:StartReadSD	16	static
+../Core/Src/app_freertos.c:174:6:StartDriveLED	32	static
+../Core/Src/app_freertos.c:209:6:StartSDtoMemory	16	static
