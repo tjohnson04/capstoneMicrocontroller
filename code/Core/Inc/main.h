@@ -123,11 +123,12 @@ void Error_Handler(void);
 #define LED_Column11_GPIO_Port GPIOB
 #define LED_Column9_Pin GPIO_PIN_5
 #define LED_Column9_GPIO_Port GPIOB
-#define SPI2_NCS_Pin GPIO_PIN_8
-#define SPI2_NCS_GPIO_Port GPIOB
+#define SPI2_NSS_Pin GPIO_PIN_8
+#define SPI2_NSS_GPIO_Port GPIOB
+#define SPI2_NSS_EXTI_IRQn EXTI4_15_IRQn
 
 /* USER CODE BEGIN Private defines */
-#define SD_SPI_HANDLE hspi1
+#define SD_SPI_HANDLE hspi2
 /* USER CODE END Private defines */
 
 #ifdef __cplusplus
