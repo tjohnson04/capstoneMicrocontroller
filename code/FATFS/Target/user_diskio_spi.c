@@ -1,19 +1,19 @@
 /**
  ******************************************************************************
-  * @file    user_diskio_spi.c
-  * @brief   This file contains the implementation of the user_diskio_spi FatFs
-  *          driver.
-  ******************************************************************************
-  * Portions copyright (C) 2014, ChaN, all rights reserved.
-  * Portions copyright (C) 2017, kiwih, all rights reserved.
-  *
-  * This software is a free software and there is NO WARRANTY.
-  * No restriction on use. You can use, modify and redistribute it for
-  * personal, non-profit or commercial products UNDER YOUR RESPONSIBILITY.
-  * Redistributions of source code must retain the above copyright notice.
-  *
-  ******************************************************************************
-  */
+ * @file    user_diskio_spi.c
+ * @brief   This file contains the implementation of the user_diskio_spi FatFs
+ *          driver.
+ ******************************************************************************
+ * Portions copyright (C) 2014, ChaN, all rights reserved.
+ * Portions copyright (C) 2017, kiwih, all rights reserved.
+ *
+ * This software is a free software and there is NO WARRANTY.
+ * No restriction on use. You can use, modify and redistribute it for
+ * personal, non-profit or commercial products UNDER YOUR RESPONSIBILITY.
+ * Redistributions of source code must retain the above copyright notice.
+ *
+ ******************************************************************************
+ */
 
 //This code was ported by kiwih from a copywrited (C) library written by ChaN
 //available at http://elm-chan.org/fsw/ff/ffsample.zip
@@ -35,8 +35,8 @@ extern SPI_HandleTypeDef SD_SPI_HANDLE;
 /* Function prototypes */
 
 //(Note that the _256 is used as a mask to clear the prescalar bits as it provides binary 111 in the correct position)
-#define FCLK_SLOW() { MODIFY_REG(SD_SPI_HANDLE.Instance->CR1, SPI_BAUDRATEPRESCALER_256, SPI_BAUDRATEPRESCALER_64); }	/* Set SCLK = slow, approx 280 KBits/s*/
-#define FCLK_FAST() { MODIFY_REG(SD_SPI_HANDLE.Instance->CR1, SPI_BAUDRATEPRESCALER_256, SPI_BAUDRATEPRESCALER_4); }	/* Set SCLK = fast, approx 4.5 MBits/s */
+#define FCLK_SLOW() { MODIFY_REG(SD_SPI_HANDLE.Instance->CR1, SPI_BAUDRATEPRESCALER_256, SPI_BAUDRATEPRESCALER_128); }	/* Set SCLK = slow, approx 280 KBits/s*/
+#define FCLK_FAST() { MODIFY_REG(SD_SPI_HANDLE.Instance->CR1, SPI_BAUDRATEPRESCALER_256, SPI_BAUDRATEPRESCALER_8); }	/* Set SCLK = fast, approx 4.5 MBits/s */
 
 #define CS_HIGH()	{HAL_GPIO_WritePin(SPI2_NSS_GPIO_Port, SPI2_NSS_Pin, GPIO_PIN_SET);}
 #define CS_LOW()	{HAL_GPIO_WritePin(SPI2_NSS_GPIO_Port, SPI2_NSS_Pin, GPIO_PIN_RESET);}
@@ -87,12 +87,12 @@ uint32_t spiTimerTickStart;
 uint32_t spiTimerTickDelay;
 
 void SPI_Timer_On(uint32_t waitTicks) {
-    spiTimerTickStart = HAL_GetTick();
-    spiTimerTickDelay = waitTicks;
+	spiTimerTickStart = HAL_GetTick();
+	spiTimerTickDelay = waitTicks;
 }
 
 uint8_t SPI_Timer_Status() {
-    return ((HAL_GetTick() - spiTimerTickStart) < spiTimerTickDelay);
+	return ((HAL_GetTick() - spiTimerTickStart) < spiTimerTickDelay);
 }
 
 /*-----------------------------------------------------------------------*/
@@ -102,20 +102,20 @@ uint8_t SPI_Timer_Status() {
 /* Exchange a byte */
 static
 BYTE xchg_spi (
-	BYTE dat	/* Data to send */
+		BYTE dat	/* Data to send */
 )
 {
 	BYTE rxDat;
-    HAL_SPI_TransmitReceive(&SD_SPI_HANDLE, &dat, &rxDat, 1, 50);
-    return rxDat;
+	HAL_SPI_TransmitReceive(&SD_SPI_HANDLE, &dat, &rxDat, 1, 50);
+	return rxDat;
 }
 
 
 /* Receive multiple byte */
 static
 void rcvr_spi_multi (
-	BYTE *buff,		/* Pointer to data buffer */
-	UINT btr		/* Number of bytes to receive (even number) */
+		BYTE *buff,		/* Pointer to data buffer */
+		UINT btr		/* Number of bytes to receive (even number) */
 )
 {
 	for(UINT i=0; i<btr; i++) {
@@ -128,8 +128,8 @@ void rcvr_spi_multi (
 /* Send multiple byte */
 static
 void xmit_spi_multi (
-	uint8_t *buff,	/* Pointer to the data */
-	UINT btx			/* Number of bytes to send (even number) */
+		const BYTE *buff,	/* Pointer to the data */
+		UINT btx			/* Number of bytes to send (even number) */
 )
 {
 	HAL_SPI_Transmit(&SD_SPI_HANDLE, buff, btx, HAL_MAX_DELAY);
@@ -143,7 +143,7 @@ void xmit_spi_multi (
 
 static
 int wait_ready (	/* 1:Ready, 0:Timeout */
-	UINT wt			/* Timeout [ms] */
+		UINT wt			/* Timeout [ms] */
 )
 {
 	BYTE d;
@@ -201,8 +201,8 @@ int spiselect (void)	/* 1:OK, 0:Timeout */
 
 static
 int rcvr_datablock (	/* 1:OK, 0:Error */
-	BYTE *buff,			/* Data buffer */
-	UINT btr			/* Data block length (byte) */
+		BYTE *buff,			/* Data buffer */
+		UINT btr			/* Data block length (byte) */
 )
 {
 	BYTE token;
@@ -317,7 +317,7 @@ BYTE send_cmd (		/* Return value: R1 resp (bit7==1:Failed to send) */
 /*-----------------------------------------------------------------------*/
 
 inline DSTATUS USER_SPI_initialize (
-	BYTE drv		/* Physical drive number (0) */
+		BYTE drv		/* Physical drive number (0) */
 )
 {
 	BYTE n, cmd, ty, ocr[4];
@@ -373,7 +373,7 @@ inline DSTATUS USER_SPI_initialize (
 /*-----------------------------------------------------------------------*/
 
 inline DSTATUS USER_SPI_status (
-	BYTE drv		/* Physical drive number (0) */
+		BYTE drv		/* Physical drive number (0) */
 )
 {
 	if (drv) return STA_NOINIT;		/* Supports only drive 0 */
@@ -388,10 +388,10 @@ inline DSTATUS USER_SPI_status (
 /*-----------------------------------------------------------------------*/
 
 inline DRESULT USER_SPI_read (
-	BYTE drv,		/* Physical drive number (0) */
-	BYTE *buff,		/* Pointer to the data buffer to store read data */
-	DWORD sector,	/* Start sector number (LBA) */
-	UINT count		/* Number of sectors to read (1..128) */
+		BYTE drv,		/* Physical drive number (0) */
+		BYTE *buff,		/* Pointer to the data buffer to store read data */
+		DWORD sector,	/* Start sector number (LBA) */
+		UINT count		/* Number of sectors to read (1..128) */
 )
 {
 	if (drv || !count) return RES_PARERR;		/* Check parameter */
@@ -401,7 +401,7 @@ inline DRESULT USER_SPI_read (
 
 	if (count == 1) {	/* Single sector read */
 		if ((send_cmd(CMD17, sector) == 0)	/* READ_SINGLE_BLOCK */
-			&& rcvr_datablock(buff, 512)) {
+				&& rcvr_datablock(buff, 512)) {
 			count = 0;
 		}
 	}
@@ -427,10 +427,10 @@ inline DRESULT USER_SPI_read (
 
 #if _USE_WRITE
 inline DRESULT USER_SPI_write (
-	BYTE drv,			/* Physical drive number (0) */
-	const BYTE *buff,	/* Ponter to the data to write */
-	DWORD sector,		/* Start sector number (LBA) */
-	UINT count			/* Number of sectors to write (1..128) */
+		BYTE drv,			/* Physical drive number (0) */
+		const BYTE *buff,	/* Ponter to the data to write */
+		DWORD sector,		/* Start sector number (LBA) */
+		UINT count			/* Number of sectors to write (1..128) */
 )
 {
 	if (drv || !count) return RES_PARERR;		/* Check parameter */
@@ -441,7 +441,7 @@ inline DRESULT USER_SPI_write (
 
 	if (count == 1) {	/* Single sector write */
 		if ((send_cmd(CMD24, sector) == 0)	/* WRITE_BLOCK */
-			&& xmit_datablock(buff, 0xFE)) {
+				&& xmit_datablock(buff, 0xFE)) {
 			count = 0;
 		}
 	}
@@ -468,9 +468,9 @@ inline DRESULT USER_SPI_write (
 
 #if _USE_IOCTL
 inline DRESULT USER_SPI_ioctl (
-	BYTE drv,		/* Physical drive number (0) */
-	BYTE cmd,		/* Control command code */
-	void *buff		/* Pointer to the conrtol data */
+		BYTE drv,		/* Physical drive number (0) */
+		BYTE cmd,		/* Control command code */
+		void *buff		/* Pointer to the conrtol data */
 )
 {
 	DRESULT res;

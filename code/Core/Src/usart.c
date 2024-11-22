@@ -136,5 +136,28 @@ void HAL_UART_MspDeInit(UART_HandleTypeDef* uartHandle)
 }
 
 /* USER CODE BEGIN 1 */
+void PrintOutputBuffer(uint8_t *OutputBuffer){
+	uint32_t StringLength;
+	HAL_StatusTypeDef HALStatus;
 
+	for (StringLength = 0; *(OutputBuffer+StringLength); StringLength++);
+
+	HALStatus = HAL_UART_Transmit(&huart1, OutputBuffer, StringLength, HAL_MAX_DELAY);
+
+	if (HALStatus != HAL_OK){
+		Error_Handler();
+	}
+}
+
+uint8_t GetUserInput(void){
+	uint8_t ReturnValue;
+	HAL_StatusTypeDef HALStatus;
+
+	HALStatus = HAL_UART_Receive(&huart1, &ReturnValue, 1, HAL_MAX_DELAY);
+
+	if (HALStatus != HAL_OK){
+		Error_Handler();
+	}
+	return ReturnValue;
+}
 /* USER CODE END 1 */
