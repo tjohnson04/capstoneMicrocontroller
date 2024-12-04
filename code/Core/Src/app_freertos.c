@@ -45,21 +45,21 @@
 
 /* Private variables ---------------------------------------------------------*/
 /* USER CODE BEGIN Variables */
-GPIO_TypeDef *led_column_ports[] = {LED_Column1_GPIO_Port, LED_Column2_GPIO_Port, LED_Column3_GPIO_Port, LED_Column4_GPIO_Port, LED_Column5_GPIO_Port,
+GPIO_TypeDef *led_column_ports[] = {LED_Column0_GPIO_Port, LED_Column1_GPIO_Port, LED_Column2_GPIO_Port, LED_Column3_GPIO_Port, LED_Column4_GPIO_Port, LED_Column5_GPIO_Port,
 		LED_Column6_GPIO_Port, LED_Column7_GPIO_Port, LED_Column8_GPIO_Port, LED_Column9_GPIO_Port, LED_Column10_GPIO_Port, LED_Column11_GPIO_Port,
-		LED_Column12_GPIO_Port, LED_Column13_GPIO_Port, LED_Column14_GPIO_Port, LED_Column15_GPIO_Port, LED_Column16_GPIO_Port};
+		LED_Column12_GPIO_Port, LED_Column13_GPIO_Port, LED_Column14_GPIO_Port, LED_Column15_GPIO_Port};
 
-uint16_t led_column_pins[] = {LED_Column1_Pin, LED_Column2_Pin, LED_Column3_Pin, LED_Column4_Pin, LED_Column5_Pin,
+uint16_t led_column_pins[] = {LED_Column0_Pin, LED_Column1_Pin, LED_Column2_Pin, LED_Column3_Pin, LED_Column4_Pin, LED_Column5_Pin,
 		LED_Column6_Pin, LED_Column7_Pin, LED_Column8_Pin, LED_Column9_Pin, LED_Column10_Pin, LED_Column11_Pin,
-		LED_Column12_Pin, LED_Column13_Pin, LED_Column14_Pin, LED_Column15_Pin, LED_Column16_Pin};
+		LED_Column12_Pin, LED_Column13_Pin, LED_Column14_Pin, LED_Column15_Pin};
 
-GPIO_TypeDef *led_row_ports[] = {LED_Row1_GPIO_Port, LED_Row2_GPIO_Port, LED_Row3_GPIO_Port, LED_Row4_GPIO_Port, LED_Row5_GPIO_Port,
+GPIO_TypeDef *led_row_ports[] = {LED_Row0_GPIO_Port, LED_Row1_GPIO_Port, LED_Row2_GPIO_Port, LED_Row3_GPIO_Port, LED_Row4_GPIO_Port, LED_Row5_GPIO_Port,
 		LED_Row6_GPIO_Port, LED_Row7_GPIO_Port, LED_Row8_GPIO_Port, LED_Row9_GPIO_Port, LED_Row10_GPIO_Port, LED_Row11_GPIO_Port,
-		LED_Row12_GPIO_Port, LED_Row13_GPIO_Port, LED_Row14_GPIO_Port, LED_Row15_GPIO_Port, LED_Row16_GPIO_Port};
+		LED_Row12_GPIO_Port, LED_Row13_GPIO_Port, LED_Row14_GPIO_Port, LED_Row15_GPIO_Port};
 
-uint16_t led_row_pins[] = {LED_Row1_Pin, LED_Row2_Pin, LED_Row3_Pin, LED_Row4_Pin, LED_Row5_Pin,
+uint16_t led_row_pins[] = {LED_Row0_Pin, LED_Row1_Pin, LED_Row2_Pin, LED_Row3_Pin, LED_Row4_Pin, LED_Row5_Pin,
 		LED_Row6_Pin, LED_Row7_Pin, LED_Row8_Pin, LED_Row9_Pin, LED_Row10_Pin, LED_Row11_Pin,
-		LED_Row12_Pin, LED_Row13_Pin, LED_Row14_Pin, LED_Row15_Pin, LED_Row16_Pin};
+		LED_Row12_Pin, LED_Row13_Pin, LED_Row14_Pin, LED_Row15_Pin};
 
 uint16_t image_leds[55][16];
 extern uint8_t current_frame;
@@ -68,23 +68,23 @@ extern uint8_t current_frame;
 /* Definitions for readSD */
 osThreadId_t readSDHandle;
 const osThreadAttr_t readSD_attributes = {
-		.name = "readSD",
-		.priority = (osPriority_t) osPriorityLow,
-		.stack_size = 128 * 4
+  .name = "readSD",
+  .priority = (osPriority_t) osPriorityLow,
+  .stack_size = 128 * 4
 };
 /* Definitions for driveLED */
 osThreadId_t driveLEDHandle;
 const osThreadAttr_t driveLED_attributes = {
-		.name = "driveLED",
-		.priority = (osPriority_t) osPriorityRealtime,
-		.stack_size = 128 * 4
+  .name = "driveLED",
+  .priority = (osPriority_t) osPriorityRealtime,
+  .stack_size = 128 * 4
 };
 /* Definitions for SDtoMemory */
 osThreadId_t SDtoMemoryHandle;
 const osThreadAttr_t SDtoMemory_attributes = {
-		.name = "SDtoMemory",
-		.priority = (osPriority_t) osPriorityLow,
-		.stack_size = 128 * 4
+  .name = "SDtoMemory",
+  .priority = (osPriority_t) osPriorityLow,
+  .stack_size = 128 * 4
 };
 
 /* Private function prototypes -----------------------------------------------*/
@@ -99,48 +99,48 @@ void StartSDtoMemory(void *argument);
 void MX_FREERTOS_Init(void); /* (MISRA C 2004 rule 8.1) */
 
 /**
- * @brief  FreeRTOS initialization
- * @param  None
- * @retval None
- */
+  * @brief  FreeRTOS initialization
+  * @param  None
+  * @retval None
+  */
 void MX_FREERTOS_Init(void) {
-	/* USER CODE BEGIN Init */
+  /* USER CODE BEGIN Init */
 
-	/* USER CODE END Init */
+  /* USER CODE END Init */
 
-	/* USER CODE BEGIN RTOS_MUTEX */
+  /* USER CODE BEGIN RTOS_MUTEX */
 	/* add mutexes, ... */
-	/* USER CODE END RTOS_MUTEX */
+  /* USER CODE END RTOS_MUTEX */
 
-	/* USER CODE BEGIN RTOS_SEMAPHORES */
+  /* USER CODE BEGIN RTOS_SEMAPHORES */
 	/* add semaphores, ... */
-	/* USER CODE END RTOS_SEMAPHORES */
+  /* USER CODE END RTOS_SEMAPHORES */
 
-	/* USER CODE BEGIN RTOS_TIMERS */
+  /* USER CODE BEGIN RTOS_TIMERS */
 	/* start timers, add new ones, ... */
-	/* USER CODE END RTOS_TIMERS */
+  /* USER CODE END RTOS_TIMERS */
 
-	/* USER CODE BEGIN RTOS_QUEUES */
+  /* USER CODE BEGIN RTOS_QUEUES */
 	/* add queues, ... */
-	/* USER CODE END RTOS_QUEUES */
+  /* USER CODE END RTOS_QUEUES */
 
-	/* Create the thread(s) */
-	/* creation of readSD */
-	readSDHandle = osThreadNew(StartReadSD, NULL, &readSD_attributes);
+  /* Create the thread(s) */
+  /* creation of readSD */
+  readSDHandle = osThreadNew(StartReadSD, NULL, &readSD_attributes);
 
-	/* creation of driveLED */
-	driveLEDHandle = osThreadNew(StartDriveLED, NULL, &driveLED_attributes);
+  /* creation of driveLED */
+  driveLEDHandle = osThreadNew(StartDriveLED, NULL, &driveLED_attributes);
 
-	/* creation of SDtoMemory */
-	SDtoMemoryHandle = osThreadNew(StartSDtoMemory, NULL, &SDtoMemory_attributes);
+  /* creation of SDtoMemory */
+  SDtoMemoryHandle = osThreadNew(StartSDtoMemory, NULL, &SDtoMemory_attributes);
 
-	/* USER CODE BEGIN RTOS_THREADS */
+  /* USER CODE BEGIN RTOS_THREADS */
 	/* add threads, ... */
-	/* USER CODE END RTOS_THREADS */
+  /* USER CODE END RTOS_THREADS */
 
-	/* USER CODE BEGIN RTOS_EVENTS */
+  /* USER CODE BEGIN RTOS_EVENTS */
 	/* add events, ... */
-	/* USER CODE END RTOS_EVENTS */
+  /* USER CODE END RTOS_EVENTS */
 
 }
 
@@ -153,14 +153,14 @@ void MX_FREERTOS_Init(void) {
 /* USER CODE END Header_StartReadSD */
 void StartReadSD(void *argument)
 {
-	/* USER CODE BEGIN StartReadSD */
+  /* USER CODE BEGIN StartReadSD */
 	/* Infinite loop */
 	for(;;)
 	{
 		osDelay(1);
 	}
 	osThreadTerminate(NULL);
-	/* USER CODE END StartReadSD */
+  /* USER CODE END StartReadSD */
 }
 
 /* USER CODE BEGIN Header_StartDriveLED */
@@ -172,7 +172,7 @@ void StartReadSD(void *argument)
 /* USER CODE END Header_StartDriveLED */
 void StartDriveLED(void *argument)
 {
-	/* USER CODE BEGIN StartDriveLED */
+  /* USER CODE BEGIN StartDriveLED */
 	/* Infinite loop */
 	for(;;)
 	{
@@ -195,7 +195,7 @@ void StartDriveLED(void *argument)
 		}
 	}
 	osThreadTerminate(NULL);
-	/* USER CODE END StartDriveLED */
+  /* USER CODE END StartDriveLED */
 }
 
 /* USER CODE BEGIN Header_StartSDtoMemory */
@@ -207,14 +207,14 @@ void StartDriveLED(void *argument)
 /* USER CODE END Header_StartSDtoMemory */
 void StartSDtoMemory(void *argument)
 {
-	/* USER CODE BEGIN StartSDtoMemory */
+  /* USER CODE BEGIN StartSDtoMemory */
 	/* Infinite loop */
 	for(;;)
 	{
 		osDelay(1);
 	}
 	osThreadTerminate(NULL);
-	/* USER CODE END StartSDtoMemory */
+  /* USER CODE END StartSDtoMemory */
 }
 
 /* Private application code --------------------------------------------------*/
