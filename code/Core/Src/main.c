@@ -13,6 +13,42 @@
  * in the root directory of this software component.
  * If no LICENSE file comes with this software, it is provided AS-IS.
  *
+ *  FatFs code based on tutorial project by kiwih at https://github.com/kiwih/cubeide-sd-card
+ *  Portions copyright (c) 2020 STMicroelectronics International N.V., all rights reserved.
+ *  Portions copyright (C) 2014, ChaN, all rights reserved.
+ *  Portions copyright (C) 2017, 2020, kiwih, all rights reserved.
+ *
+ *  Redistribution and use in source and binary forms, with or without
+ *  modification, are permitted, provided that the following conditions are met:
+ *
+ *  1. Redistribution of source code must retain the above copyright notice,
+ *     this list of conditions and the following disclaimer.
+ *  2. Redistributions in binary form must reproduce the above copyright notice,
+ *     this list of conditions and the following disclaimer in the documentation
+ *     and/or other materials provided with the distribution.
+ *  3. Neither the name of STMicroelectronics nor the names of other
+ *     contributors to this software may be used to endorse or promote products
+ *     derived from this software without specific written permission.
+ *  4. This software, including modifications and/or derivative works of this
+ *     software, must execute solely and exclusively on microcontroller or
+ *     microprocessor devices manufactured by or for STMicroelectronics.
+ *  5. Redistribution and use of this software other than as permitted under
+ *     this license is void and will automatically terminate your rights under
+ *     this license.
+ *
+ * THIS SOFTWARE IS PROVIDED BY STMICROELECTRONICS AND CONTRIBUTORS "AS IS"
+ * AND ANY EXPRESS, IMPLIED OR STATUTORY WARRANTIES, INCLUDING, BUT NOT
+ * LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY, FITNESS FOR A
+ * PARTICULAR PURPOSE AND NON-INFRINGEMENT OF THIRD PARTY INTELLECTUAL PROPERTY
+ * RIGHTS ARE DISCLAIMED TO THE FULLEST EXTENT PERMITTED BY LAW. IN NO EVENT
+ * SHALL STMICROELECTRONICS OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT,
+ * INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT
+ * LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA,
+ * OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF
+ * LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING
+ * NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE,
+ * EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+ *
  ******************************************************************************
  */
 /* USER CODE END Header */
@@ -42,7 +78,9 @@
 /* Private define ------------------------------------------------------------*/
 /* USER CODE BEGIN PD */
 #define BUFFER_SIZE 64
-#define NO_SCHEDULER
+
+//#define TEST_LEDS
+//#define TEST_SD
 /* USER CODE END PD */
 
 /* Private macro -------------------------------------------------------------*/
@@ -64,6 +102,9 @@ extern uint16_t led_row_pins[];
 uint8_t OutputBuffer[BUFFER_SIZE];
 uint16_t i = 0;
 uint8_t ReceiveCharacter = 0;
+
+uint8_t rx_buffer[BUFFER_SIZE];
+uint8_t rx_index = 0;
 /* USER CODE END PV */
 
 /* Private function prototypes -----------------------------------------------*/
@@ -117,118 +158,139 @@ int main(void)
   MX_TIM14_Init();
   MX_USART1_UART_Init();
   /* USER CODE BEGIN 2 */
-	// LED testing code
-#ifdef NO_SCHEDULER
-	// nmos = columns | pmos = rows
-	for (uint8_t j = 0; j < 16; j++) {
-		HAL_GPIO_WritePin(led_column_ports[j], led_column_pins[j], GPIO_PIN_SET);
-	}
 
-	for (uint8_t i = 0; i < 16; i++) {
-		HAL_GPIO_WritePin(led_row_ports[i], led_row_pins[i], GPIO_PIN_SET);
-	}
-	i = 0;
-	while (1) {
-		HAL_GPIO_WritePin(led_row_ports[i], led_row_pins[i], GPIO_PIN_RESET);
-		HAL_Delay(5);
-		HAL_GPIO_WritePin(led_row_ports[i], led_row_pins[i], GPIO_PIN_SET);
-		i++;
-		if (i > 15) i = 0;
-	}
+  //  SD card testing code
 
+#ifdef TEST_SD
+  sprintf((char *) OutputBuffer, "\r\n~ Starting SD mount ~\r\n\r\n");
+  PrintOutputBuffer(OutputBuffer);
+
+  HAL_Delay(1000); // short delay to let the SD card settle
+
+  // some variables for FatFs
+  FATFS FatFs; 	// Fatfs handle
+  FIL fil; 		// File handle
+  FRESULT fres; 	// Result after operations
+
+  // open the file system
+  fres = f_mount(&FatFs, "", 1); //1=mount now
+  if (fres != FR_OK) {
+	  sprintf((char *) OutputBuffer, "f_mount error (%i)\r\n", fres);
+	  PrintOutputBuffer(OutputBuffer);
+	  while(1);
+  }
+
+  // gather statistics from the SD card
+  DWORD free_clusters, free_sectors, total_sectors;
+
+  FATFS* getFreeFs;
+
+  fres = f_getfree("", &free_clusters, &getFreeFs);
+  if (fres != FR_OK) {
+	  sprintf((char *) OutputBuffer, "f_getfree error (%i)\r\n", fres);
+	  PrintOutputBuffer(OutputBuffer);
+	  while(1);
+  }
+
+  // formula comes from ChaN's documentation
+  total_sectors = (getFreeFs->n_fatent - 2) * getFreeFs->csize;
+  free_sectors = free_clusters * getFreeFs->csize;
+
+  sprintf((char *) OutputBuffer, "SD card stats:\r\n%10lu KiB total drive space.\r\n", total_sectors/2);
+  PrintOutputBuffer(OutputBuffer);
+  sprintf((char *) OutputBuffer, "%10lu KiB available.\r\n", free_sectors/2);
+  PrintOutputBuffer(OutputBuffer);
+
+  //Now let's try to open file "test.txt"
+  fres = f_open(&fil, "test.txt", FA_READ);
+  if (fres != FR_OK) {
+	  sprintf((char *) OutputBuffer, "f_open error (%i)\r\n", fres);
+	  PrintOutputBuffer(OutputBuffer);
+	  while(1);
+  }
+  sprintf((char *) OutputBuffer, "I was able to open 'test.txt' for reading!\r\n");
+  PrintOutputBuffer(OutputBuffer);
+
+  BYTE readBuf[17];
+  int x = -1;
+  int x3 = 0;
+  int image = 0;
+  char fullText[128];
+  unsigned int decimal_value = 0;
+  memset(fullText, 0, sizeof(fullText));
+  TCHAR* rres3 = "4";
+  if(rres3 != 0) {
+	  while (x < 1760) { //this states limit of how big the txt is
+		  f_gets((TCHAR*)readBuf, 17, &fil);
+		  x += 1;
+		  decimal_value = 0;
+		  if ((x+1) % 2 == 1) {
+			  // Concatenate the read line to the full text buffer
+			  for (int i = 0; i < 16; i++) { // the 16 bits when running
+				  // Convert '1' or '0' char to its integer value
+				  int bit_value = readBuf[i] - '0'; // '1' - '0' = 1, '0' - '0' = 0
+
+				  // Update the decimal value
+				  decimal_value = (decimal_value << 1) | bit_value; // Left-shift and add the current bit
+			  }
+			  image_leds[image][x3] = decimal_value;
+			  x3 += 1;
+		  }
+		  if (x3 > 15) {
+			  image += 1;
+			  x3 = 0;
+		  }
+	  }
+
+	  sprintf((char *) OutputBuffer, "Read string from 'test.txt'");
+	  PrintOutputBuffer(OutputBuffer);
+  } else {
+	  sprintf((char *) OutputBuffer, "f_gets error (%i)\r\n", fres);
+	  PrintOutputBuffer(OutputBuffer);
+  }
+
+  f_close(&fil);
+
+  //We're done, so de-mount the drive
+  f_mount(NULL, "", 0);
+
+#elif TEST_LEDS
+  	// nmos = columns | pmos = rows
+  	for (uint8_t j = 0; j < 16; j++) {
+  		HAL_GPIO_WritePin(led_column_ports[j], led_column_pins[j], GPIO_PIN_SET);
+  	}
+
+  	for (uint8_t i = 0; i < 16; i++) {
+  		HAL_GPIO_WritePin(led_row_ports[i], led_row_pins[i], GPIO_PIN_SET);
+  	}
+  	i = 0;
+  	while (1) {
+  		HAL_GPIO_WritePin(led_row_ports[i], led_row_pins[i], GPIO_PIN_RESET);
+  		HAL_Delay(25);
+  		HAL_GPIO_WritePin(led_row_ports[i], led_row_pins[i], GPIO_PIN_SET);
+  		i++;
+  		if (i > 15) i = 0;
+  	}
 #else
-	sprintf((char *) OutputBuffer, "\r\n~ Starting SD mount ~\r\n\r\n");
-	PrintOutputBuffer(OutputBuffer);
+  for (uint8_t i = 0; i < 55; i++) {
+	  image_leds[i][0] = 0xFFFF;
+	  image_leds[i][1] = 0xFFFF;
+	  image_leds[i][2] = 0xFFFF;
+	  image_leds[i][3] = 0xFFFF;
+	  image_leds[i][4] = 0xF00F;
+	  image_leds[i][5] = 0xF00F;
+	  image_leds[i][6] = 0xF00F;
+	  image_leds[i][7] = 0xF00F;
+	  image_leds[i][8] = 0xF00F;
+	  image_leds[i][9] = 0xF00F;
+	  image_leds[i][10] = 0xF00F;
+	  image_leds[i][11] = 0xF00F;
+	  image_leds[i][12] = 0xFFFF;
+	  image_leds[i][13] = 0xFFFF;
+	  image_leds[i][14] = 0xFFFF;
+	  image_leds[i][15] = 0xFFFF;
 
-	HAL_Delay(1000); // short delay to let the SD card settle
-
-	// some variables for FatFs
-	FATFS FatFs; 	// Fatfs handle
-	FIL fil; 		// File handle
-	FRESULT fres; 	// Result after operations
-
-	// open the file system
-	fres = f_mount(&FatFs, "", 1); //1=mount now
-	if (fres != FR_OK) {
-		sprintf((char *) OutputBuffer, "f_mount error (%i)\r\n", fres);
-		PrintOutputBuffer(OutputBuffer);
-		while(1);
-	}
-
-	// gather statistics from the SD card
-	DWORD free_clusters, free_sectors, total_sectors;
-
-	FATFS* getFreeFs;
-
-	fres = f_getfree("", &free_clusters, &getFreeFs);
-	if (fres != FR_OK) {
-		sprintf((char *) OutputBuffer, "f_getfree error (%i)\r\n", fres);
-		PrintOutputBuffer(OutputBuffer);
-		while(1);
-	}
-
-	// formula comes from ChaN's documentation
-	total_sectors = (getFreeFs->n_fatent - 2) * getFreeFs->csize;
-	free_sectors = free_clusters * getFreeFs->csize;
-
-	sprintf((char *) OutputBuffer, "SD card stats:\r\n%10lu KiB total drive space.\r\n", total_sectors/2);
-	PrintOutputBuffer(OutputBuffer);
-	sprintf((char *) OutputBuffer, "%10lu KiB available.\r\n", free_sectors/2);
-	PrintOutputBuffer(OutputBuffer);
-
-	//Now let's try to open file "test.txt"
-	fres = f_open(&fil, "test.txt", FA_READ);
-	if (fres != FR_OK) {
-		sprintf((char *) OutputBuffer, "f_open error (%i)\r\n", fres);
-		PrintOutputBuffer(OutputBuffer);
-		while(1);
-	}
-	sprintf((char *) OutputBuffer, "I was able to open 'test.txt' for reading!\r\n");
-	PrintOutputBuffer(OutputBuffer);
-
-	BYTE readBuf[17];
-	int x = -1;
-	int x3 = 0;
-	int image = 0;
-	char fullText[128];
-	unsigned int decimal_value = 0;
-	memset(fullText, 0, sizeof(fullText));
-	TCHAR* rres3 = "4";
-	if(rres3 != 0) {
-		while (x < 1760) { //this states limit of how big the txt is
-			f_gets((TCHAR*)readBuf, 17, &fil);
-			x += 1;
-			decimal_value = 0;
-			if ((x+1) % 2 == 1) {
-				// Concatenate the read line to the full text buffer
-				for (int i = 0; i < 16; i++) { // the 16 bits when running
-					// Convert '1' or '0' char to its integer value
-					int bit_value = readBuf[i] - '0'; // '1' - '0' = 1, '0' - '0' = 0
-
-					// Update the decimal value
-					decimal_value = (decimal_value << 1) | bit_value; // Left-shift and add the current bit
-				}
-				image_leds[image][x3] = decimal_value;
-				x3 += 1;
-			}
-			if (x3 > 15) {
-				image += 1;
-				x3 = 0;
-			}
-		}
-
-		sprintf((char *) OutputBuffer, "Read string from 'test.txt'");
-		PrintOutputBuffer(OutputBuffer);
-	} else {
-		sprintf((char *) OutputBuffer, "f_gets error (%i)\r\n", fres);
-		PrintOutputBuffer(OutputBuffer);
-	}
-
-	f_close(&fil);
-
-	//We're done, so de-mount the drive
-	f_mount(NULL, "", 0);
-
+  }
   /* USER CODE END 2 */
 
   /* Init scheduler */
@@ -397,6 +459,56 @@ void HAL_GPIO_EXTI_Falling_Callback(uint16_t GPIO_Pin) {
 		taskEXIT_CRITICAL();
 	}
 }
+
+// Callback for data reception
+void HAL_I2C_MasterRxCpltCallback(I2C_HandleTypeDef *hi2c) {
+    if (hi2c->Instance == I2C1) {
+        // Handle received data
+    	FIL fil; 		// File handle
+    	BYTE readBuf[17];
+    	int x = -1;
+    	int x3 = 0;
+    	int image = 0;
+    	char fullText[128];
+    	unsigned int decimal_value = 0;
+    	memset(fullText, 0, sizeof(fullText));
+    	TCHAR* rres3 = "4";
+    	if (rres3 != 0) {
+    		while (x < 1760) { //this states limit of how big the txt is
+    			f_gets((TCHAR*)readBuf, 17, &fil);
+    			x += 1;
+    			decimal_value = 0;
+    			if ((x+1) % 2 == 1) {
+    				// Concatenate the read line to the full text buffer
+    				for (int i = 0; i < 16; i++) { // the 16 bits when running
+    					// Convert '1' or '0' char to its integer value
+    					int bit_value = readBuf[i] - '0'; // '1' - '0' = 1, '0' - '0' = 0
+
+    					// Update the decimal value
+    					decimal_value = (decimal_value << 1) | bit_value; // Left-shift and add the current bit
+    				}
+    				image_leds[image][x3] = decimal_value;
+    				x3 += 1;
+    			}
+    			if (x3 > 15) {
+    				image += 1;
+    				x3 = 0;
+    			}
+    		}
+    	}
+    	// For example, restart reception or process the received data
+    	HAL_I2C_Master_Receive_IT(&hi2c1, 0x70, rx_buffer, BUFFER_SIZE);
+    }
+}
+
+// Error callback
+void HAL_I2C_ErrorCallback(I2C_HandleTypeDef *hi2c) {
+    if (hi2c->Instance == I2C1) {
+        // Handle I2C error
+        Error_Handler();
+    }
+}
+
 /* USER CODE END 4 */
 
 /**

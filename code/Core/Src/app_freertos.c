@@ -25,7 +25,10 @@
 
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
-
+#include "app_fatfs.h"
+#include <stdio.h>
+#include <string.h>
+#include <stdarg.h>
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -65,25 +68,11 @@ uint16_t image_leds[55][16];
 extern uint8_t current_frame;
 
 /* USER CODE END Variables */
-/* Definitions for readSD */
-osThreadId_t readSDHandle;
-const osThreadAttr_t readSD_attributes = {
-  .name = "readSD",
-  .priority = (osPriority_t) osPriorityLow,
-  .stack_size = 128 * 4
-};
 /* Definitions for driveLED */
 osThreadId_t driveLEDHandle;
 const osThreadAttr_t driveLED_attributes = {
   .name = "driveLED",
-  .priority = (osPriority_t) osPriorityRealtime,
-  .stack_size = 128 * 4
-};
-/* Definitions for SDtoMemory */
-osThreadId_t SDtoMemoryHandle;
-const osThreadAttr_t SDtoMemory_attributes = {
-  .name = "SDtoMemory",
-  .priority = (osPriority_t) osPriorityLow,
+  .priority = (osPriority_t) osPriorityHigh,
   .stack_size = 128 * 4
 };
 
@@ -92,9 +81,7 @@ const osThreadAttr_t SDtoMemory_attributes = {
 
 /* USER CODE END FunctionPrototypes */
 
-void StartReadSD(void *argument);
 void StartDriveLED(void *argument);
-void StartSDtoMemory(void *argument);
 
 void MX_FREERTOS_Init(void); /* (MISRA C 2004 rule 8.1) */
 
@@ -125,14 +112,8 @@ void MX_FREERTOS_Init(void) {
   /* USER CODE END RTOS_QUEUES */
 
   /* Create the thread(s) */
-  /* creation of readSD */
-  readSDHandle = osThreadNew(StartReadSD, NULL, &readSD_attributes);
-
   /* creation of driveLED */
   driveLEDHandle = osThreadNew(StartDriveLED, NULL, &driveLED_attributes);
-
-  /* creation of SDtoMemory */
-  SDtoMemoryHandle = osThreadNew(StartSDtoMemory, NULL, &SDtoMemory_attributes);
 
   /* USER CODE BEGIN RTOS_THREADS */
 	/* add threads, ... */
@@ -144,77 +125,38 @@ void MX_FREERTOS_Init(void) {
 
 }
 
-/* USER CODE BEGIN Header_StartReadSD */
-/**
- * @brief  Function implementing the readSD thread.
- * @param  argument: Not used
- * @retval None
- */
-/* USER CODE END Header_StartReadSD */
-void StartReadSD(void *argument)
-{
-  /* USER CODE BEGIN StartReadSD */
-	/* Infinite loop */
-	for(;;)
-	{
-		osDelay(1);
-	}
-	osThreadTerminate(NULL);
-  /* USER CODE END StartReadSD */
-}
-
 /* USER CODE BEGIN Header_StartDriveLED */
 /**
- * @brief Function implementing the driveLED thread.
- * @param argument: Not used
- * @retval None
- */
+  * @brief  Function implementing the driveLED thread.
+  * @param  argument: Not used
+  * @retval None
+  */
 /* USER CODE END Header_StartDriveLED */
 void StartDriveLED(void *argument)
 {
   /* USER CODE BEGIN StartDriveLED */
-	/* Infinite loop */
-	for(;;)
-	{
-		for (uint8_t i = 0; i < 16; i++) {
-			// turn off last row (active low)
-			HAL_GPIO_WritePin(led_row_ports[i], led_row_pins[i], GPIO_PIN_SET);
+  /* Infinite loop */
+  for(;;)
+  {
+	  for (uint8_t i = 0; i < 16; i++) {
+		  // set columns
+		  for (uint8_t j = 0; j < 16; j++) {
+			  if (image_leds[current_frame][i] & (0x1 << (15-j))) {
+				  HAL_GPIO_WritePin(led_column_ports[j], led_column_pins[j], GPIO_PIN_SET);
+			  } else {
+				  HAL_GPIO_WritePin(led_column_ports[j], led_column_pins[j], GPIO_PIN_RESET);
+			  }
+		  }
+		  // turn on row (active low)
+		  HAL_GPIO_WritePin(led_row_ports[i], led_row_pins[i], GPIO_PIN_RESET);
+		  osDelay(1);
 
-			// set columns
-			// 0000 0000 0000 0000
-			for (uint8_t j = 0; j < 16; j++) {
-				if (image_leds[current_frame][i] & 0x1 << (16-j)) {
-					HAL_GPIO_WritePin(led_column_ports[j], led_column_pins[j], GPIO_PIN_SET);
-				} else {
-					HAL_GPIO_WritePin(led_column_ports[j], led_column_pins[j], GPIO_PIN_RESET);
-				}
-			}
-
-			// turn on next row
-			HAL_GPIO_WritePin(led_row_ports[(i+1) % 16], led_row_pins[(i+1) % 16], GPIO_PIN_RESET);
-		}
-	}
-	osThreadTerminate(NULL);
+		  // turn off row
+		  HAL_GPIO_WritePin(led_row_ports[i], led_row_pins[i], GPIO_PIN_SET);
+	  }
+  }
+  osThreadTerminate(NULL);
   /* USER CODE END StartDriveLED */
-}
-
-/* USER CODE BEGIN Header_StartSDtoMemory */
-/**
- * @brief Function implementing the SDtoMemory thread.
- * @param argument: Not used
- * @retval None
- */
-/* USER CODE END Header_StartSDtoMemory */
-void StartSDtoMemory(void *argument)
-{
-  /* USER CODE BEGIN StartSDtoMemory */
-	/* Infinite loop */
-	for(;;)
-	{
-		osDelay(1);
-	}
-	osThreadTerminate(NULL);
-  /* USER CODE END StartSDtoMemory */
 }
 
 /* Private application code --------------------------------------------------*/

@@ -1,0 +1,4 @@
+../Core/Src/app_freertos.c:109:6:MX_FREERTOS_Init	1
+../Core/Src/app_freertos.c:157:6:StartReadSD	1
+../Core/Src/app_freertos.c:176:6:StartDriveLED	6
+../Core/Src/app_freertos.c:211:6:StartSDtoMemory	7
