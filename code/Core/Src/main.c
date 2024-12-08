@@ -80,7 +80,7 @@
 #define BUFFER_SIZE 64
 
 //#define TEST_LEDS
-//#define TEST_SD
+#define TEST_SD
 /* USER CODE END PD */
 
 /* Private macro -------------------------------------------------------------*/
@@ -151,21 +151,32 @@ int main(void)
   if (MX_FATFS_Init() != APP_OK) {
     Error_Handler();
   }
-  MX_TIM16_Init();
   MX_I2C1_Init();
   MX_ADC1_Init();
   MX_SPI2_Init();
   MX_TIM14_Init();
   MX_USART1_UART_Init();
+  MX_TIM3_Init();
   /* USER CODE BEGIN 2 */
+  if (HAL_TIM_Base_Start_IT(&htim3) != HAL_OK) {
+	  Error_Handler();
+  }
 
   //  SD card testing code
 
 #ifdef TEST_SD
-  sprintf((char *) OutputBuffer, "\r\n~ Starting SD mount ~\r\n\r\n");
-  PrintOutputBuffer(OutputBuffer);
+  for (uint8_t i = 0; i < 16; i++) {
+	  HAL_GPIO_WritePin(led_row_ports[i], led_row_pins[i], GPIO_PIN_SET);
+  }
+  for (i = 0; i < 16; i++) {
+	  HAL_GPIO_WritePin(led_column_ports[i], led_column_pins[i], GPIO_PIN_SET);
+  }
+  HAL_GPIO_WritePin(led_row_ports[0], led_row_pins[0], GPIO_PIN_RESET);
 
-  HAL_Delay(1000); // short delay to let the SD card settle
+//  sprintf((char *) OutputBuffer, "\r\n~ Starting SD mount ~\r\n\r\n");
+//  PrintOutputBuffer(OutputBuffer);
+//
+//  osDelay(100); // short delay to let the SD card settle
 
   // some variables for FatFs
   FATFS FatFs; 	// Fatfs handle
@@ -175,10 +186,12 @@ int main(void)
   // open the file system
   fres = f_mount(&FatFs, "", 1); //1=mount now
   if (fres != FR_OK) {
+	  HAL_GPIO_WritePin(led_row_ports[15], led_row_pins[15], GPIO_PIN_RESET);
 	  sprintf((char *) OutputBuffer, "f_mount error (%i)\r\n", fres);
 	  PrintOutputBuffer(OutputBuffer);
 	  while(1);
   }
+  HAL_GPIO_WritePin(led_row_ports[1], led_row_pins[1], GPIO_PIN_RESET);
 
   // gather statistics from the SD card
   DWORD free_clusters, free_sectors, total_sectors;
@@ -192,6 +205,8 @@ int main(void)
 	  while(1);
   }
 
+  HAL_GPIO_WritePin(led_row_ports[2], led_row_pins[2], GPIO_PIN_RESET);
+
   // formula comes from ChaN's documentation
   total_sectors = (getFreeFs->n_fatent - 2) * getFreeFs->csize;
   free_sectors = free_clusters * getFreeFs->csize;
@@ -200,16 +215,22 @@ int main(void)
   PrintOutputBuffer(OutputBuffer);
   sprintf((char *) OutputBuffer, "%10lu KiB available.\r\n", free_sectors/2);
   PrintOutputBuffer(OutputBuffer);
+  HAL_GPIO_WritePin(led_row_ports[3], led_row_pins[3], GPIO_PIN_RESET);
 
   //Now let's try to open file "test.txt"
-  fres = f_open(&fil, "test.txt", FA_READ);
+  fres = f_open(&fil, "full_obj_output.txt", FA_READ);
   if (fres != FR_OK) {
+	  HAL_GPIO_WritePin(led_row_ports[15], led_row_pins[15], GPIO_PIN_RESET);
 	  sprintf((char *) OutputBuffer, "f_open error (%i)\r\n", fres);
 	  PrintOutputBuffer(OutputBuffer);
 	  while(1);
   }
   sprintf((char *) OutputBuffer, "I was able to open 'test.txt' for reading!\r\n");
   PrintOutputBuffer(OutputBuffer);
+
+  HAL_GPIO_WritePin(led_row_ports[4], led_row_pins[4], GPIO_PIN_RESET);
+
+
 
   BYTE readBuf[17];
   int x = -1;
@@ -254,6 +275,11 @@ int main(void)
   //We're done, so de-mount the drive
   f_mount(NULL, "", 0);
 
+  HAL_GPIO_WritePin(led_row_ports[5], led_row_pins[5], GPIO_PIN_RESET);
+
+  while (1);
+
+
 #elif TEST_LEDS
   	// nmos = columns | pmos = rows
   	for (uint8_t j = 0; j < 16; j++) {
@@ -272,25 +298,44 @@ int main(void)
   		if (i > 15) i = 0;
   	}
 #else
-  for (uint8_t i = 0; i < 55; i++) {
-	  image_leds[i][0] = 0xFFFF;
-	  image_leds[i][1] = 0xFFFF;
-	  image_leds[i][2] = 0xFFFF;
-	  image_leds[i][3] = 0xFFFF;
-	  image_leds[i][4] = 0xF00F;
-	  image_leds[i][5] = 0xF00F;
-	  image_leds[i][6] = 0xF00F;
-	  image_leds[i][7] = 0xF00F;
-	  image_leds[i][8] = 0xF00F;
-	  image_leds[i][9] = 0xF00F;
-	  image_leds[i][10] = 0xF00F;
-	  image_leds[i][11] = 0xF00F;
-	  image_leds[i][12] = 0xFFFF;
-	  image_leds[i][13] = 0xFFFF;
-	  image_leds[i][14] = 0xFFFF;
-	  image_leds[i][15] = 0xFFFF;
-
-  }
+//  	for (uint8_t i = 0; i < 55; i++) {
+//  		image_leds[i][0] = 0xFFFF;
+//  		image_leds[i][1] = 0xFFFF;
+//  		image_leds[i][2] = 0xFFFF;
+//  		image_leds[i][3] = 0xFFFF;
+//  		image_leds[i][4] = 0x0000;
+//  		image_leds[i][5] = 0x0000;
+//  		image_leds[i][6] = 0x0000;
+//  		image_leds[i][7] = 0x0000;
+//  		image_leds[i][8] = 0x0000;
+//  		image_leds[i][9] = 0x0000;
+//  		image_leds[i][10] = 0x0000;
+//  		image_leds[i][11] = 0x0000;
+//  		image_leds[i][12] = 0xFFFF;
+//  		image_leds[i][13] = 0xFFFF;
+//  		image_leds[i][14] = 0xFFFF;
+//  		image_leds[i][15] = 0xFFFF;
+//  	}
+//  	for (uint8_t i = 0; i < 55; i++) {
+//  	  image_leds[i][0] = 0x0000;
+//	  image_leds[i][1] = 0x0000;
+//	  image_leds[i][2] = 0x0000;
+//	  image_leds[i][3] = 0x0000;
+//	  image_leds[i][4] = 0x0000;
+//	  image_leds[i][5] = 0x0000;
+//	  image_leds[i][6] = 0x0000;
+//	  image_leds[i][7] = 0x0000;
+//	  image_leds[i][8] = 0x0000;
+//	  image_leds[i][9] = 0x0000;
+//	  image_leds[i][10] = 0x0000;
+//	  image_leds[i][11] = 0x0000;
+//	  image_leds[i][12] = 0x0000;
+//	  image_leds[i][13] = 0x0000;
+//	  image_leds[i][14] = 0x0000;
+//	  image_leds[i][15] = 0x0000;
+//
+//	  image_leds[i][i % 16] = 0xFFFF;
+//  }
   /* USER CODE END 2 */
 
   /* Init scheduler */
@@ -396,7 +441,7 @@ void ReadSD() {
 	PrintOutputBuffer(OutputBuffer);
 
 	//Now let's try to open file "test.txt"
-	fres = f_open(&fil, "test.txt", FA_READ);
+	fres = f_open(&fil, "full_obj_output.txt", FA_READ);
 	if (fres != FR_OK) {
 		sprintf((char *) OutputBuffer, "f_open error (%i)\r\n", fres);
 		PrintOutputBuffer(OutputBuffer);
@@ -522,9 +567,9 @@ void HAL_I2C_ErrorCallback(I2C_HandleTypeDef *hi2c) {
 void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
 {
   /* USER CODE BEGIN Callback 0 */
-	if (htim == &htim16 ) {
-		current_frame = (current_frame + 1) % 55;
-	}
+  if (htim->Instance == TIM3) {
+	current_frame = (current_frame + 1) % 55;
+  }
   /* USER CODE END Callback 0 */
   if (htim->Instance == TIM6) {
     HAL_IncTick();

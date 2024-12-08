@@ -125,7 +125,6 @@ void Error_Handler(void);
 #define LED_Column7_GPIO_Port GPIOB
 #define SPI2_NSS_Pin GPIO_PIN_8
 #define SPI2_NSS_GPIO_Port GPIOB
-#define SPI2_NSS_EXTI_IRQn EXTI4_15_IRQn
 
 /* USER CODE BEGIN Private defines */
 #define SD_SPI_HANDLE hspi2

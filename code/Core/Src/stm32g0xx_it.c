@@ -56,7 +56,8 @@
 
 /* External variables --------------------------------------------------------*/
 extern I2C_HandleTypeDef hi2c1;
-extern TIM_HandleTypeDef htim16;
+extern SPI_HandleTypeDef hspi2;
+extern TIM_HandleTypeDef htim3;
 extern TIM_HandleTypeDef htim6;
 
 /* USER CODE BEGIN EV */
@@ -104,17 +105,17 @@ void HardFault_Handler(void)
 /******************************************************************************/
 
 /**
-  * @brief This function handles EXTI line 4 to 15 interrupts.
+  * @brief This function handles TIM3 global interrupt.
   */
-void EXTI4_15_IRQHandler(void)
+void TIM3_IRQHandler(void)
 {
-  /* USER CODE BEGIN EXTI4_15_IRQn 0 */
+  /* USER CODE BEGIN TIM3_IRQn 0 */
 
-  /* USER CODE END EXTI4_15_IRQn 0 */
-  HAL_GPIO_EXTI_IRQHandler(SPI2_NSS_Pin);
-  /* USER CODE BEGIN EXTI4_15_IRQn 1 */
+  /* USER CODE END TIM3_IRQn 0 */
+  HAL_TIM_IRQHandler(&htim3);
+  /* USER CODE BEGIN TIM3_IRQn 1 */
 
-  /* USER CODE END EXTI4_15_IRQn 1 */
+  /* USER CODE END TIM3_IRQn 1 */
 }
 
 /**
@@ -129,20 +130,6 @@ void TIM6_IRQHandler(void)
   /* USER CODE BEGIN TIM6_IRQn 1 */
 
   /* USER CODE END TIM6_IRQn 1 */
-}
-
-/**
-  * @brief This function handles TIM16 global interrupt.
-  */
-void TIM16_IRQHandler(void)
-{
-  /* USER CODE BEGIN TIM16_IRQn 0 */
-
-  /* USER CODE END TIM16_IRQn 0 */
-  HAL_TIM_IRQHandler(&htim16);
-  /* USER CODE BEGIN TIM16_IRQn 1 */
-
-  /* USER CODE END TIM16_IRQn 1 */
 }
 
 /**
@@ -164,6 +151,20 @@ void I2C1_IRQHandler(void)
   /* USER CODE BEGIN I2C1_IRQn 1 */
 
   /* USER CODE END I2C1_IRQn 1 */
+}
+
+/**
+  * @brief This function handles SPI2 global interrupt.
+  */
+void SPI2_IRQHandler(void)
+{
+  /* USER CODE BEGIN SPI2_IRQn 0 */
+
+  /* USER CODE END SPI2_IRQn 0 */
+  HAL_SPI_IRQHandler(&hspi2);
+  /* USER CODE BEGIN SPI2_IRQn 1 */
+
+  /* USER CODE END SPI2_IRQn 1 */
 }
 
 /* USER CODE BEGIN 1 */
