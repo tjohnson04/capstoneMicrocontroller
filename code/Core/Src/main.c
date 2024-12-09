@@ -162,8 +162,7 @@ int main(void)
 	  Error_Handler();
   }
 
-  //  SD card testing code
-
+//  SD card testing code
 #ifdef TEST_SD
   for (uint8_t i = 0; i < 16; i++) {
 	  HAL_GPIO_WritePin(led_row_ports[i], led_row_pins[i], GPIO_PIN_SET);
@@ -173,10 +172,8 @@ int main(void)
   }
   HAL_GPIO_WritePin(led_row_ports[0], led_row_pins[0], GPIO_PIN_RESET);
 
-//  sprintf((char *) OutputBuffer, "\r\n~ Starting SD mount ~\r\n\r\n");
-//  PrintOutputBuffer(OutputBuffer);
-//
-//  osDelay(100); // short delay to let the SD card settle
+
+  HAL_Delay(1000); // short delay to let the SD card settle
 
   // some variables for FatFs
   FATFS FatFs; 	// Fatfs handle
@@ -187,48 +184,30 @@ int main(void)
   fres = f_mount(&FatFs, "", 1); //1=mount now
   if (fres != FR_OK) {
 	  HAL_GPIO_WritePin(led_row_ports[15], led_row_pins[15], GPIO_PIN_RESET);
-	  sprintf((char *) OutputBuffer, "f_mount error (%i)\r\n", fres);
-	  PrintOutputBuffer(OutputBuffer);
 	  while(1);
   }
   HAL_GPIO_WritePin(led_row_ports[1], led_row_pins[1], GPIO_PIN_RESET);
 
   // gather statistics from the SD card
-  DWORD free_clusters, free_sectors, total_sectors;
+  DWORD free_clusters;
 
   FATFS* getFreeFs;
 
   fres = f_getfree("", &free_clusters, &getFreeFs);
   if (fres != FR_OK) {
-	  sprintf((char *) OutputBuffer, "f_getfree error (%i)\r\n", fres);
-	  PrintOutputBuffer(OutputBuffer);
 	  while(1);
   }
 
   HAL_GPIO_WritePin(led_row_ports[2], led_row_pins[2], GPIO_PIN_RESET);
 
-  // formula comes from ChaN's documentation
-  total_sectors = (getFreeFs->n_fatent - 2) * getFreeFs->csize;
-  free_sectors = free_clusters * getFreeFs->csize;
-
-  sprintf((char *) OutputBuffer, "SD card stats:\r\n%10lu KiB total drive space.\r\n", total_sectors/2);
-  PrintOutputBuffer(OutputBuffer);
-  sprintf((char *) OutputBuffer, "%10lu KiB available.\r\n", free_sectors/2);
-  PrintOutputBuffer(OutputBuffer);
-  HAL_GPIO_WritePin(led_row_ports[3], led_row_pins[3], GPIO_PIN_RESET);
-
   //Now let's try to open file "test.txt"
-  fres = f_open(&fil, "full_obj_output.txt", FA_READ);
+  fres = f_open(&fil, "test.txt", FA_READ);
   if (fres != FR_OK) {
 	  HAL_GPIO_WritePin(led_row_ports[15], led_row_pins[15], GPIO_PIN_RESET);
-	  sprintf((char *) OutputBuffer, "f_open error (%i)\r\n", fres);
-	  PrintOutputBuffer(OutputBuffer);
 	  while(1);
   }
-  sprintf((char *) OutputBuffer, "I was able to open 'test.txt' for reading!\r\n");
-  PrintOutputBuffer(OutputBuffer);
 
-  HAL_GPIO_WritePin(led_row_ports[4], led_row_pins[4], GPIO_PIN_RESET);
+  HAL_GPIO_WritePin(led_row_ports[3], led_row_pins[3], GPIO_PIN_RESET);
 
 
 
@@ -262,22 +241,22 @@ int main(void)
 			  x3 = 0;
 		  }
 	  }
-
-	  sprintf((char *) OutputBuffer, "Read string from 'test.txt'");
-	  PrintOutputBuffer(OutputBuffer);
   } else {
-	  sprintf((char *) OutputBuffer, "f_gets error (%i)\r\n", fres);
-	  PrintOutputBuffer(OutputBuffer);
+	  HAL_GPIO_WritePin(led_row_ports[15], led_row_pins[15], GPIO_PIN_RESET);
+	  while (1);
   }
 
+  HAL_GPIO_WritePin(led_row_ports[4], led_row_pins[4], GPIO_PIN_RESET);
+
   f_close(&fil);
+
+  HAL_GPIO_WritePin(led_row_ports[5], led_row_pins[5], GPIO_PIN_RESET);
 
   //We're done, so de-mount the drive
   f_mount(NULL, "", 0);
 
-  HAL_GPIO_WritePin(led_row_ports[5], led_row_pins[5], GPIO_PIN_RESET);
+  HAL_GPIO_WritePin(led_row_ports[6], led_row_pins[6], GPIO_PIN_RESET);
 
-  while (1);
 
 
 #elif TEST_LEDS
@@ -316,26 +295,27 @@ int main(void)
 //  		image_leds[i][14] = 0xFFFF;
 //  		image_leds[i][15] = 0xFFFF;
 //  	}
-//  	for (uint8_t i = 0; i < 55; i++) {
-//  	  image_leds[i][0] = 0x0000;
-//	  image_leds[i][1] = 0x0000;
-//	  image_leds[i][2] = 0x0000;
-//	  image_leds[i][3] = 0x0000;
-//	  image_leds[i][4] = 0x0000;
-//	  image_leds[i][5] = 0x0000;
-//	  image_leds[i][6] = 0x0000;
-//	  image_leds[i][7] = 0x0000;
-//	  image_leds[i][8] = 0x0000;
-//	  image_leds[i][9] = 0x0000;
-//	  image_leds[i][10] = 0x0000;
-//	  image_leds[i][11] = 0x0000;
-//	  image_leds[i][12] = 0x0000;
-//	  image_leds[i][13] = 0x0000;
-//	  image_leds[i][14] = 0x0000;
-//	  image_leds[i][15] = 0x0000;
-//
-//	  image_leds[i][i % 16] = 0xFFFF;
-//  }
+  	for (uint8_t i = 0; i < 55; i++) {
+  	  image_leds[i][0] = 0x0000;
+	  image_leds[i][1] = 0x0000;
+	  image_leds[i][2] = 0x0000;
+	  image_leds[i][3] = 0x0000;
+	  image_leds[i][4] = 0x0000;
+	  image_leds[i][5] = 0x0000;
+	  image_leds[i][6] = 0x0000;
+	  image_leds[i][7] = 0x0000;
+	  image_leds[i][8] = 0x0000;
+	  image_leds[i][9] = 0x0000;
+	  image_leds[i][10] = 0x0000;
+	  image_leds[i][11] = 0x0000;
+	  image_leds[i][12] = 0x0000;
+	  image_leds[i][13] = 0x0000;
+	  image_leds[i][14] = 0x0000;
+	  image_leds[i][15] = 0x0000;
+
+	  image_leds[i][i % 16] = 0xFFFF;
+  }
+#endif
   /* USER CODE END 2 */
 
   /* Init scheduler */
@@ -351,7 +331,7 @@ int main(void)
 
   /* Infinite loop */
   /* USER CODE BEGIN WHILE */
-#endif
+
 	while (1)
 	{
 
@@ -378,10 +358,8 @@ void SystemClock_Config(void)
   /** Initializes the RCC Oscillators according to the specified parameters
   * in the RCC_OscInitTypeDef structure.
   */
-  RCC_OscInitStruct.OscillatorType = RCC_OSCILLATORTYPE_HSI;
-  RCC_OscInitStruct.HSIState = RCC_HSI_ON;
-  RCC_OscInitStruct.HSIDiv = RCC_HSI_DIV1;
-  RCC_OscInitStruct.HSICalibrationValue = RCC_HSICALIBRATION_DEFAULT;
+  RCC_OscInitStruct.OscillatorType = RCC_OSCILLATORTYPE_HSE;
+  RCC_OscInitStruct.HSEState = RCC_HSE_ON;
   RCC_OscInitStruct.PLL.PLLState = RCC_PLL_NONE;
   if (HAL_RCC_OscConfig(&RCC_OscInitStruct) != HAL_OK)
   {
@@ -392,11 +370,11 @@ void SystemClock_Config(void)
   */
   RCC_ClkInitStruct.ClockType = RCC_CLOCKTYPE_HCLK|RCC_CLOCKTYPE_SYSCLK
                               |RCC_CLOCKTYPE_PCLK1;
-  RCC_ClkInitStruct.SYSCLKSource = RCC_SYSCLKSOURCE_HSI;
+  RCC_ClkInitStruct.SYSCLKSource = RCC_SYSCLKSOURCE_HSE;
   RCC_ClkInitStruct.AHBCLKDivider = RCC_SYSCLK_DIV1;
   RCC_ClkInitStruct.APB1CLKDivider = RCC_HCLK_DIV1;
 
-  if (HAL_RCC_ClockConfig(&RCC_ClkInitStruct, FLASH_LATENCY_0) != HAL_OK)
+  if (HAL_RCC_ClockConfig(&RCC_ClkInitStruct, FLASH_LATENCY_1) != HAL_OK)
   {
     Error_Handler();
   }
@@ -414,41 +392,24 @@ void ReadSD() {
 	// open the file system
 	fres = f_mount(&FatFs, "", 1); //1=mount now
 	if (fres != FR_OK) {
-		sprintf((char *) OutputBuffer, "f_mount error (%i)\r\n", fres);
-		PrintOutputBuffer(OutputBuffer);
 		while(1);
 	}
 
 	// gather statistics from the SD card
-	DWORD free_clusters, free_sectors, total_sectors;
+	DWORD free_clusters;
 
 	FATFS* getFreeFs;
 
 	fres = f_getfree("", &free_clusters, &getFreeFs);
 	if (fres != FR_OK) {
-		sprintf((char *) OutputBuffer, "f_getfree error (%i)\r\n", fres);
-		PrintOutputBuffer(OutputBuffer);
 		while(1);
 	}
-
-	// formula comes from ChaN's documentation
-	total_sectors = (getFreeFs->n_fatent - 2) * getFreeFs->csize;
-	free_sectors = free_clusters * getFreeFs->csize;
-
-	sprintf((char *) OutputBuffer, "SD card stats:\r\n%10lu KiB total drive space.\r\n", total_sectors/2);
-	PrintOutputBuffer(OutputBuffer);
-	sprintf((char *) OutputBuffer, "%10lu KiB available.\r\n", free_sectors/2);
-	PrintOutputBuffer(OutputBuffer);
 
 	//Now let's try to open file "test.txt"
 	fres = f_open(&fil, "full_obj_output.txt", FA_READ);
 	if (fres != FR_OK) {
-		sprintf((char *) OutputBuffer, "f_open error (%i)\r\n", fres);
-		PrintOutputBuffer(OutputBuffer);
 		while(1);
 	}
-	sprintf((char *) OutputBuffer, "I was able to open 'test.txt' for reading!\r\n");
-	PrintOutputBuffer(OutputBuffer);
 
 	BYTE readBuf[17];
 	int x = -1;
@@ -481,16 +442,9 @@ void ReadSD() {
 			}
 		}
 
-		sprintf((char *) OutputBuffer, "Read string from 'test.txt'");
-		PrintOutputBuffer(OutputBuffer);
-	} else {
-		sprintf((char *) OutputBuffer, "f_gets error (%i)\r\n", fres);
-		PrintOutputBuffer(OutputBuffer);
 	}
 
 	f_close(&fil);
-
-	//We're done, so de-mount the drive
 	f_mount(NULL, "", 0);
 }
 

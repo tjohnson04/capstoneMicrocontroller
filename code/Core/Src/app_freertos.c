@@ -149,7 +149,7 @@ void StartDriveLED(void *argument)
 		  }
 		  // turn on row (active low)
 		  HAL_GPIO_WritePin(led_row_ports[i], led_row_pins[i], GPIO_PIN_RESET);
-		  osDelay(1);
+		  osDelay(20);
 
 		  // turn off row
 		  HAL_GPIO_WritePin(led_row_ports[i], led_row_pins[i], GPIO_PIN_SET);

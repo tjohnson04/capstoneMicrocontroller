@@ -1,20 +1,20 @@
 /* USER CODE BEGIN Header */
 /**
  ******************************************************************************
- * @file    user_diskio.c
- * @brief   This file includes a diskio driver skeleton to be completed by the user.
- ******************************************************************************
- * @attention
- *
- * Copyright (c) 2024 STMicroelectronics.
- * All rights reserved.
- *
- * This software is licensed under terms that can be found in the LICENSE file
- * in the root directory of this software component.
- * If no LICENSE file comes with this software, it is provided AS-IS.
- *
- ******************************************************************************
- */
+  * @file    user_diskio.c
+  * @brief   This file includes a diskio driver skeleton to be completed by the user.
+  ******************************************************************************
+  * @attention
+  *
+  * Copyright (c) 2024 STMicroelectronics.
+  * All rights reserved.
+  *
+  * This software is licensed under terms that can be found in the LICENSE file
+  * in the root directory of this software component.
+  * If no LICENSE file comes with this software, it is provided AS-IS.
+  *
+  ******************************************************************************
+  */
  /* USER CODE END Header */
 
 #ifdef USE_OBSOLETE_USER_CODE_SECTION_0
@@ -35,7 +35,6 @@
 /* Includes ------------------------------------------------------------------*/
 #include <string.h>
 #include "ff_gen_drv.h"
-#include "user_diskio_spi.h"
 
 /* Private typedef -----------------------------------------------------------*/
 /* Private define ------------------------------------------------------------*/
@@ -82,7 +81,8 @@ DSTATUS USER_initialize (
 )
 {
   /* USER CODE BEGIN INIT */
-	return USER_SPI_initialize(pdrv);
+    Stat = STA_NOINIT;
+    return Stat;
   /* USER CODE END INIT */
 }
 
@@ -96,7 +96,8 @@ DSTATUS USER_status (
 )
 {
   /* USER CODE BEGIN STATUS */
-	return USER_SPI_status(pdrv);
+    Stat = STA_NOINIT;
+    return Stat;
   /* USER CODE END STATUS */
 }
 
@@ -116,7 +117,7 @@ DRESULT USER_read (
 )
 {
   /* USER CODE BEGIN READ */
-	return USER_SPI_read(pdrv, buff, sector, count);
+    return RES_OK;
   /* USER CODE END READ */
 }
 
@@ -137,8 +138,8 @@ DRESULT USER_write (
 )
 {
   /* USER CODE BEGIN WRITE */
-	/* USER CODE HERE */
-	return USER_SPI_write(pdrv, buff, sector, count);
+  /* USER CODE HERE */
+    return RES_OK;
   /* USER CODE END WRITE */
 }
 #endif /* _USE_WRITE == 1 */
@@ -158,7 +159,8 @@ DRESULT USER_ioctl (
 )
 {
   /* USER CODE BEGIN IOCTL */
-	return USER_SPI_ioctl(pdrv, cmd, buff);
+    DRESULT res = RES_ERROR;
+    return res;
   /* USER CODE END IOCTL */
 }
 #endif /* _USE_IOCTL == 1 */
